@@ -16,7 +16,7 @@ An MCP server that lets you query any documentation site powered by [Mintlify](h
 ## Quick Start
 
 ```bash
-claude mcp add agno -- bunx mintlify-mcp --project agno-v2
+claude mcp add agno-assistant -- bunx mintlify-mcp --project agno-v2
 ```
 
 Or add to your settings manually:
@@ -24,7 +24,7 @@ Or add to your settings manually:
 ```json
 {
   "mcpServers": {
-    "agno": {
+    "agno-assistant": {
       "command": "bunx",
       "args": ["mintlify-mcp", "-p", "agno-v2"]
     }
@@ -39,8 +39,8 @@ Or add to your settings manually:
 ### Multiple Documentation Sites
 
 ```bash
-claude mcp add agno -- bunx mintlify-mcp -p agno-v2
-claude mcp add resend -- bunx mintlify-mcp -p resend
+claude mcp add agno-assistant -- bunx mintlify-mcp -p agno-v2
+claude mcp add resend-assistant -- bunx mintlify-mcp -p resend
 ```
 
 Or in settings:
@@ -48,11 +48,11 @@ Or in settings:
 ```json
 {
   "mcpServers": {
-    "agno": {
+    "agno-assistant": {
       "command": "bunx",
       "args": ["mintlify-mcp", "-p", "agno-v2"]
     },
-    "resend": {
+    "resend-assistant": {
       "command": "bunx",
       "args": ["mintlify-mcp", "-p", "resend"]
     }

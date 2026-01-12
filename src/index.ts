@@ -61,12 +61,12 @@ EXAMPLES:
   bunx mintlify-mcp -p resend -n "Resend Email"
 
 CLAUDE CODE CONFIGURATION:
-  claude mcp add agno -- bunx mintlify-mcp -p agno-v2
+  claude mcp add agno-assistant -- bunx mintlify-mcp -p agno-v2
 
   Or in settings.json:
   {
     "mcpServers": {
-      "agno": {
+      "agno-assistant": {
         "command": "bunx",
         "args": ["mintlify-mcp", "-p", "agno-v2"]
       }
