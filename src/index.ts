@@ -8,13 +8,25 @@ import {
 } from "@modelcontextprotocol/sdk/types.js";
 
 // =============================================================================
-// CLI ARGUMENT PARSING - Enables specialized MCP instances
+// KNOWN DOCUMENTATION SITES
+// =============================================================================
+
+const KNOWN_DOCS: Record<string, { name: string; domain: string }> = {
+  "agno-v2": { name: "Agno", domain: "docs.agno.com" },
+  "resend": { name: "Resend", domain: "resend.com/docs" },
+  "upstash": { name: "Upstash", domain: "upstash.com/docs" },
+  "mintlify": { name: "Mintlify", domain: "mintlify.com/docs" },
+  "vercel": { name: "Vercel", domain: "vercel.com/docs" },
+  "plain": { name: "Plain", domain: "plain.com/docs" },
+};
+
+// =============================================================================
+// CLI ARGUMENT PARSING
 // =============================================================================
 
 interface CLIConfig {
-  projectId?: string;
-  projectName?: string;
-  isLocked: boolean;
+  projectId: string;
+  projectName: string;
 }
 
 function parseArgs(): CLIConfig {
@@ -34,52 +46,29 @@ function parseArgs(): CLIConfig {
 mintlify-mcp - Query Mintlify-powered documentation from Claude Code
 
 USAGE:
-  bunx mintlify-mcp [options]
+  bunx mintlify-mcp --project <id> [options]
 
 OPTIONS:
-  -p, --project <id>    Lock to a specific Mintlify project ID
-  -n, --name <name>     Custom display name (default: project name or "Mintlify")
+  -p, --project <id>    Mintlify project ID (required)
+  -n, --name <name>     Custom display name (default: auto-detected)
   -h, --help            Show this help message
 
-EXAMPLES:
-  # Generic mode - query any Mintlify docs
-  bunx mintlify-mcp
+KNOWN PROJECT IDs:
+${Object.entries(KNOWN_DOCS).map(([id, info]) => `  ${id.padEnd(12)} ${info.name}`).join("\n")}
 
-  # Specialized mode - locked to Agno docs
+EXAMPLES:
   bunx mintlify-mcp --project agno-v2
+  bunx mintlify-mcp -p resend -n "Resend Email"
 
 CLAUDE CODE CONFIGURATION:
+  claude mcp add agno -- bunx mintlify-mcp -p agno-v2
 
-  Generic (multi-docs):
-  {
-    "mcpServers": {
-      "mintlify": {
-        "command": "bunx",
-        "args": ["mintlify-mcp"]
-      }
-    }
-  }
-
-  Specialized (single-doc, recommended):
-  {
-    "mcpServers": {
-      "agno": {
-        "command": "bunx",
-        "args": ["mintlify-mcp", "--project", "agno-v2"]
-      }
-    }
-  }
-
-  Multiple specialized:
+  Or in settings.json:
   {
     "mcpServers": {
       "agno": {
         "command": "bunx",
         "args": ["mintlify-mcp", "-p", "agno-v2"]
-      },
-      "resend": {
-        "command": "bunx",
-        "args": ["mintlify-mcp", "-p", "resend"]
       }
     }
   }
@@ -88,23 +77,20 @@ CLAUDE CODE CONFIGURATION:
     }
   }
 
-  const isLocked = !!projectId;
-
-  // Auto-detect name from known docs if not provided
-  if (projectId && !projectName) {
-    projectName = KNOWN_DOCS[projectId]?.name;
+  if (!projectId) {
+    console.error("Error: --project <id> is required\n");
+    console.error("Usage: bunx mintlify-mcp --project <project-id>");
+    console.error("       bunx mintlify-mcp --help for more info");
+    process.exit(1);
   }
 
-  return { projectId, projectName, isLocked };
+  // Auto-detect name from known docs if not provided
+  if (!projectName) {
+    projectName = KNOWN_DOCS[projectId]?.name || projectId;
+  }
+
+  return { projectId, projectName };
 }
-
-// =============================================================================
-// KNOWN DOCUMENTATION SITES
-// =============================================================================
-
-const KNOWN_DOCS: Record<string, { name: string; domain: string }> = {
-  "agno-v2": { name: "Agno", domain: "docs.agno.com" },
-};
 
 // =============================================================================
 // CONFIGURATION
@@ -112,11 +98,7 @@ const KNOWN_DOCS: Record<string, { name: string; domain: string }> = {
 
 const CONFIG = parseArgs();
 const MINTLIFY_API_BASE = "https://leaves.mintlify.com/api/assistant";
-
-// Server name changes based on mode
-const SERVER_NAME = CONFIG.isLocked
-  ? `${CONFIG.projectName || CONFIG.projectId} AI Assistant`
-  : "Mintlify AI Assistant";
+const SERVER_NAME = `${CONFIG.projectName} AI Assistant`;
 
 // =============================================================================
 // TYPES
@@ -133,12 +115,12 @@ interface Message {
   content: string;
   createdAt: string;
   parts: MessagePart[];
-  revisionId?: string; // Required for assistant messages
+  revisionId?: string;
 }
 
 interface ConversationState {
   messages: Message[];
-  threadId?: string; // Obtained from X-Thread-Id response header
+  threadId?: string;
 }
 
 interface AskResult {
@@ -147,8 +129,8 @@ interface AskResult {
   messageId?: string;
 }
 
-// Store conversation state per project
-const conversations: Map<string, ConversationState> = new Map();
+// Store conversation state
+let conversationState: ConversationState = { messages: [], threadId: undefined };
 
 // =============================================================================
 // UTILITIES
@@ -162,13 +144,8 @@ function generateId(): string {
 // MINTLIFY API
 // =============================================================================
 
-async function askMintlify(
-  projectId: string,
-  question: string,
-  conversationHistory: Message[] = [],
-  threadId?: string
-): Promise<AskResult> {
-  const domain = KNOWN_DOCS[projectId]?.domain || `${projectId}.mintlify.app`;
+async function askMintlify(question: string): Promise<AskResult> {
+  const domain = KNOWN_DOCS[CONFIG.projectId]?.domain || `${CONFIG.projectId}.mintlify.app`;
   const timestamp = new Date().toISOString();
 
   const newMessage: Message = {
@@ -179,20 +156,19 @@ async function askMintlify(
     parts: [{ type: "text", text: question }],
   };
 
-  const messages = [...conversationHistory, newMessage];
+  const messages = [...conversationState.messages, newMessage];
 
-  // Build request body - only include threadId if we have one from a previous response
   const requestBody: Record<string, unknown> = {
-    id: projectId,
-    fp: projectId,
+    id: CONFIG.projectId,
+    fp: CONFIG.projectId,
     messages,
   };
 
-  if (threadId) {
-    requestBody.threadId = threadId;
+  if (conversationState.threadId) {
+    requestBody.threadId = conversationState.threadId;
   }
 
-  const response = await fetch(`${MINTLIFY_API_BASE}/${projectId}/message`, {
+  const response = await fetch(`${MINTLIFY_API_BASE}/${CONFIG.projectId}/message`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -203,14 +179,10 @@ async function askMintlify(
   });
 
   if (!response.ok) {
-    throw new Error(
-      `Mintlify API error: ${response.status} ${response.statusText}`
-    );
+    throw new Error(`Mintlify API error: ${response.status} ${response.statusText}`);
   }
 
-  // Capture X-Thread-Id from response header for subsequent requests
-  const newThreadId = response.headers.get("X-Thread-Id") || threadId;
-
+  const newThreadId = response.headers.get("X-Thread-Id") || conversationState.threadId;
   const text = await response.text();
   const { answer, messageId } = parseStreamedResponse(text);
 
@@ -227,7 +199,6 @@ function parseStreamedResponse(rawResponse: string): { answer: string; messageId
   let messageId: string | undefined;
 
   for (const line of lines) {
-    // Extract messageId from metadata line
     if (line.startsWith("f:")) {
       try {
         const metadata = JSON.parse(line.slice(2));
@@ -235,9 +206,7 @@ function parseStreamedResponse(rawResponse: string): { answer: string; messageId
       } catch {
         // Ignore parse errors
       }
-    }
-    // Extract text content
-    else if (line.startsWith("0:")) {
+    } else if (line.startsWith("0:")) {
       try {
         const text = JSON.parse(line.slice(2));
         if (typeof text === "string") {
@@ -271,84 +240,32 @@ const server = new Server(
 );
 
 // =============================================================================
-// TOOLS - Different based on locked/generic mode
+// TOOLS
 // =============================================================================
 
 server.setRequestHandler(ListToolsRequestSchema, async () => {
-  // LOCKED MODE: Single tool, no project_id needed
-  if (CONFIG.isLocked) {
-    const docName = CONFIG.projectName || CONFIG.projectId;
-    return {
-      tools: [
-        {
-          name: "ask",
-          description: `Ask a question about ${docName} documentation. The AI will search the docs and provide a relevant answer with code examples.`,
-          inputSchema: {
-            type: "object" as const,
-            properties: {
-              question: {
-                type: "string",
-                description: `Your question about ${docName}`,
-              },
-            },
-            required: ["question"],
-          },
-        },
-        {
-          name: "clear_history",
-          description: "Clear conversation history to start fresh",
-          inputSchema: {
-            type: "object" as const,
-            properties: {},
-          },
-        },
-      ],
-    };
-  }
-
-  // GENERIC MODE: Multiple tools, project_id required
   return {
     tools: [
       {
-        name: "ask_docs",
-        description:
-          "Ask a question to a Mintlify-powered documentation site. Provide the project_id and your question.",
+        name: "ask",
+        description: `Ask a question about ${CONFIG.projectName} documentation. The AI will search the docs and provide a relevant answer with code examples.`,
         inputSchema: {
           type: "object" as const,
           properties: {
-            project_id: {
-              type: "string",
-              description:
-                'The Mintlify project ID (e.g., "agno-v2" for Agno docs). Use list_docs to see available options.',
-            },
             question: {
               type: "string",
-              description: "The question to ask the documentation",
+              description: `Your question about ${CONFIG.projectName}`,
             },
           },
-          required: ["project_id", "question"],
+          required: ["question"],
         },
       },
       {
-        name: "list_docs",
-        description: "List all known Mintlify documentation sites",
+        name: "clear_history",
+        description: "Clear conversation history to start fresh",
         inputSchema: {
           type: "object" as const,
           properties: {},
-        },
-      },
-      {
-        name: "clear_conversation",
-        description: "Clear conversation history for a project",
-        inputSchema: {
-          type: "object" as const,
-          properties: {
-            project_id: {
-              type: "string",
-              description: "The project ID to clear history for",
-            },
-          },
-          required: ["project_id"],
         },
       },
     ],
@@ -362,87 +279,24 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
 server.setRequestHandler(CallToolRequestSchema, async (request) => {
   const { name, arguments: args } = request.params;
 
-  // LOCKED MODE HANDLERS
-  if (CONFIG.isLocked) {
-    const projectId = CONFIG.projectId!;
-
-    switch (name) {
-      case "ask": {
-        const { question } = args as { question: string };
-        let state = conversations.get(projectId);
-        if (!state) {
-          state = { messages: [], threadId: undefined };
-          conversations.set(projectId, state);
-        }
-
-        try {
-          const result = await askMintlify(projectId, question, state.messages, state.threadId);
-
-          // Update threadId from response
-          state.threadId = result.threadId;
-
-          // Update history with proper message format
-          const timestamp = new Date().toISOString();
-          state.messages.push({
-            id: generateId(),
-            role: "user",
-            content: question,
-            createdAt: timestamp,
-            parts: [{ type: "text", text: question }],
-          });
-          state.messages.push({
-            id: result.messageId || `msg-${generateId()}`,
-            role: "assistant",
-            content: result.answer,
-            createdAt: new Date().toISOString(),
-            parts: [{ type: "step-start" }, { type: "text", text: result.answer }],
-            revisionId: generateId(),
-          });
-
-          return { content: [{ type: "text", text: result.answer }] };
-        } catch (error) {
-          const msg = error instanceof Error ? error.message : "Unknown error";
-          return { content: [{ type: "text", text: `Error: ${msg}` }], isError: true };
-        }
-      }
-
-      case "clear_history": {
-        conversations.delete(projectId);
-        return { content: [{ type: "text", text: "Conversation history cleared." }] };
-      }
-    }
-  }
-
-  // GENERIC MODE HANDLERS
   switch (name) {
-    case "ask_docs": {
-      const { project_id, question } = args as {
-        project_id: string;
-        question: string;
-      };
-
-      let state = conversations.get(project_id);
-      if (!state) {
-        state = { messages: [], threadId: undefined };
-        conversations.set(project_id, state);
-      }
+    case "ask": {
+      const { question } = args as { question: string };
 
       try {
-        const result = await askMintlify(project_id, question, state.messages, state.threadId);
+        const result = await askMintlify(question);
 
-        // Update threadId from response
-        state.threadId = result.threadId;
-
-        // Update history with proper message format
+        // Update state
+        conversationState.threadId = result.threadId;
         const timestamp = new Date().toISOString();
-        state.messages.push({
+        conversationState.messages.push({
           id: generateId(),
           role: "user",
           content: question,
           createdAt: timestamp,
           parts: [{ type: "text", text: question }],
         });
-        state.messages.push({
+        conversationState.messages.push({
           id: result.messageId || `msg-${generateId()}`,
           role: "assistant",
           content: result.answer,
@@ -458,23 +312,9 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
       }
     }
 
-    case "list_docs": {
-      const docsList = Object.entries(KNOWN_DOCS)
-        .map(([id, info]) => `- **${info.name}** (\`${id}\`) - https://${info.domain}`)
-        .join("\n");
-
-      return {
-        content: [{
-          type: "text",
-          text: `# Available Documentation\n\n${docsList}\n\n> Use any project_id with ask_docs, or configure a specialized MCP with --project`,
-        }],
-      };
-    }
-
-    case "clear_conversation": {
-      const { project_id } = args as { project_id: string };
-      conversations.delete(project_id);
-      return { content: [{ type: "text", text: `History cleared for: ${project_id}` }] };
+    case "clear_history": {
+      conversationState = { messages: [], threadId: undefined };
+      return { content: [{ type: "text", text: "Conversation history cleared." }] };
     }
 
     default:
@@ -489,11 +329,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
 async function main() {
   const transport = new StdioServerTransport();
   await server.connect(transport);
-
-  const mode = CONFIG.isLocked
-    ? `locked to ${CONFIG.projectName || CONFIG.projectId}`
-    : "generic mode";
-  console.error(`${SERVER_NAME} running (${mode})`);
+  console.error(`${SERVER_NAME} running`);
 }
 
 main().catch((error) => {
