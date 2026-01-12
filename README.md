@@ -15,33 +15,22 @@ An MCP (Model Context Protocol) server that lets you query any documentation sit
 
 ## Quick Start
 
-### Installation
-
-```bash
-# Clone the repository
-git clone https://github.com/YOUR_USERNAME/mintlify-mcp.git
-cd mintlify-mcp
-
-# Install dependencies (using Bun)
-bun install
-```
-
-> **Note:** This project uses [Bun](https://bun.sh) - no build step required! TypeScript runs directly.
-
-### Configure Claude Code
-
-Add to your Claude Code MCP settings:
+Add to your Claude Code MCP settings (`~/.claude/settings.json`):
 
 ```json
 {
   "mcpServers": {
     "mintlify": {
-      "command": "bun",
-      "args": ["/path/to/mintlify-mcp/src/index.ts"]
+      "command": "bunx",
+      "args": ["mintlify-mcp"]
     }
   }
 }
 ```
+
+**That's it!** Restart Claude Code and you're ready to query any Mintlify docs.
+
+> **Requires:** [Bun](https://bun.sh) installed (`curl -fsSL https://bun.sh/install | bash`)
 
 ## Usage
 
