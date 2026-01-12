@@ -30,11 +30,11 @@
     "anthropic",
     "bun"
   ],
-  "author": "",
+  "author": "Vigtu",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/YOUR_USERNAME/mintlify-mcp.git"
+    "url": "https://github.com/Vigtu/mintlify-mcp.git"
   },
   "engines": {
     "bun": ">=1.0.0"
