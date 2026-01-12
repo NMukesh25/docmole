@@ -10,6 +10,11 @@ import {
 // Known Mintlify documentation sites
 const KNOWN_DOCS: Record<string, { name: string; domain: string }> = {
   "agno-v2": { name: "Agno", domain: "docs.agno.com" },
+  "resend": { name: "Resend", domain: "resend.com/docs" },
+  "upstash": { name: "Upstash", domain: "upstash.com/docs" },
+  "mintlify": { name: "Mintlify", domain: "mintlify.com/docs" },
+  "vercel": { name: "Vercel", domain: "vercel.com/docs" },
+  "plain": { name: "Plain", domain: "plain.com/docs" },
 };
 
 // Mintlify API base URL

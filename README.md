@@ -49,8 +49,13 @@ Query mintlify docs for "agno-v2": what are tools?
 | Documentation | Project ID | Status |
 |--------------|------------|--------|
 | [Agno](https://docs.agno.com) | `agno-v2` | ✅ Tested |
+| [Resend](https://resend.com/docs) | `resend` | ✅ Tested |
+| [Upstash](https://upstash.com/docs) | `upstash` | ✅ Tested |
+| [Mintlify](https://mintlify.com/docs) | `mintlify` | ✅ Tested |
+| [Vercel](https://vercel.com/docs) | `vercel` | ✅ Tested |
+| [Plain](https://plain.com/docs) | `plain` | ✅ Tested |
 
-> **Want to add more?** Open a PR or issue with the documentation URL!
+> **Want to add more?** The project ID is usually the subdomain or company name. Open a PR or issue!
 
 ## How It Works
 

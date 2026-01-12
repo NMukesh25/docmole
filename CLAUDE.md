@@ -32,6 +32,11 @@ The `project-id` can be found by:
 | Documentation | Project ID | URL |
 |--------------|------------|-----|
 | Agno | `agno-v2` | https://docs.agno.com |
+| Resend | `resend` | https://resend.com/docs |
+| Upstash | `upstash` | https://upstash.com/docs |
+| Mintlify | `mintlify` | https://mintlify.com/docs |
+| Vercel | `vercel` | https://vercel.com/docs |
+| Plain | `plain` | https://plain.com/docs |
 
 ### Headers
 
