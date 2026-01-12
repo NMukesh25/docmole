@@ -1,21 +1,61 @@
 # mintlify-mcp
 
-> MCP server to chat with any Mintlify-powered documentation via Claude Code
+> MCP server to query any Mintlify-powered documentation from Claude Code
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 ## What is this?
 
-An MCP (Model Context Protocol) server that lets you query any documentation site powered by [Mintlify](https://mintlify.com) directly from Claude Code.
+An MCP server that lets you query any documentation site powered by [Mintlify](https://mintlify.com) directly from Claude Code.
 
 **Example use cases:**
-- Ask questions about Agno, LangChain, or any Mintlify docs
+- Ask questions about Agno, Resend, or any Mintlify docs
 - Get code examples and explanations without leaving your terminal
 - Multi-turn conversations with documentation context
 
 ## Quick Start
 
-Add to your Claude Code MCP settings (`~/.claude/settings.json`):
+### Recommended: Specialized Mode
+
+Create a dedicated MCP for each documentation site:
+
+```json
+{
+  "mcpServers": {
+    "agno": {
+      "command": "bunx",
+      "args": ["mintlify-mcp", "--project", "agno-v2"]
+    }
+  }
+}
+```
+
+Now when you say **"search for workflows"**, Claude knows to use the `agno` MCP!
+
+**Tools available:**
+- `ask` - Ask any question about the docs
+- `clear_history` - Reset conversation
+
+### Multiple Documentation Sites
+
+```json
+{
+  "mcpServers": {
+    "agno": {
+      "command": "bunx",
+      "args": ["mintlify-mcp", "-p", "agno-v2"]
+    },
+    "resend": {
+      "command": "bunx",
+      "args": ["mintlify-mcp", "-p", "resend"]
+    }
+  }
+}
+```
+
+### Generic Mode
+
+Query any Mintlify docs without pre-configuration:
 
 ```json
 {
@@ -28,34 +68,45 @@ Add to your Claude Code MCP settings (`~/.claude/settings.json`):
 }
 ```
 
-**That's it!** Restart Claude Code and you're ready to query any Mintlify docs.
+**Tools available:**
+- `ask_docs` - Query docs (requires `project_id`)
+- `list_docs` - Show known documentation sites
+- `clear_conversation` - Reset history
 
-> **Requires:** [Bun](https://bun.sh) installed (`curl -fsSL https://bun.sh/install | bash`)
-
-## Usage
-
-Once configured, you can use commands like:
-
-```
-Ask the Agno documentation: how do I create a workflow?
-```
-
-```
-Query mintlify docs for "agno-v2": what are tools?
-```
-
-## Supported Documentation Sites
+## Known Project IDs
 
 | Documentation | Project ID | Status |
 |--------------|------------|--------|
-| [Agno](https://docs.agno.com) | `agno-v2` | ✅ Tested |
-| [Resend](https://resend.com/docs) | `resend` | ✅ Tested |
-| [Upstash](https://upstash.com/docs) | `upstash` | ✅ Tested |
-| [Mintlify](https://mintlify.com/docs) | `mintlify` | ✅ Tested |
-| [Vercel](https://vercel.com/docs) | `vercel` | ✅ Tested |
-| [Plain](https://plain.com/docs) | `plain` | ✅ Tested |
+| [Agno](https://docs.agno.com) | `agno-v2` | Tested |
+| [Resend](https://resend.com/docs) | `resend` | Tested |
+| [Upstash](https://upstash.com/docs) | `upstash` | Tested |
+| [Mintlify](https://mintlify.com/docs) | `mintlify` | Tested |
+| [Vercel](https://vercel.com/docs) | `vercel` | Tested |
+| [Plain](https://plain.com/docs) | `plain` | Tested |
 
 > **Want to add more?** The project ID is usually the subdomain or company name. Open a PR or issue!
+
+### Finding New Project IDs
+
+1. Open the documentation site (e.g., `docs.agno.com`)
+2. Open browser DevTools → Network tab
+3. Use the search or AI assistant feature
+4. Look for requests to `leaves.mintlify.com/api/assistant/{project-id}/message`
+
+## CLI Options
+
+```bash
+bunx mintlify-mcp --help
+
+OPTIONS:
+  -p, --project <id>    Lock to a specific project ID
+  -n, --name <name>     Custom display name
+  -h, --help            Show help
+```
+
+## Requirements
+
+- [Bun](https://bun.sh) runtime: `curl -fsSL https://bun.sh/install | bash`
 
 ## How It Works
 
@@ -71,34 +122,26 @@ Query mintlify docs for "agno-v2": what are tools?
 3. Mintlify searches documentation using RAG
 4. Response streams back to Claude Code
 
+**Context Optimization:** The server extracts only the assistant's text from SSE responses, reducing ~50-100KB raw responses to ~1KB (99% reduction!).
+
 ## API Documentation
 
 See [CLAUDE.md](./CLAUDE.md) for complete reverse-engineered API documentation including:
-- Endpoint details
-- Request/response schemas
+- Endpoint details and schemas
+- Request/response formats
 - cURL examples
 - Multi-turn conversation support
-
-## Contributing
-
-Contributions welcome! Please:
-1. Fork the repository
-2. Create a feature branch
-3. Submit a PR
-
-### Adding New Documentation Sites
-
-To add support for a new Mintlify-powered site:
-
-1. Visit the documentation site
-2. Open DevTools > Network tab
-3. Use the search/AI assistant feature
-4. Find the request to `leaves.mintlify.com/api/assistant/{project-id}/message`
-5. Add the project ID to the supported sites list
 
 ## License
 
 MIT - See [LICENSE](./LICENSE)
+
+## Contributing
+
+PRs welcome! To add a new documentation site:
+1. Add the project ID to `KNOWN_DOCS` in `src/index.ts`
+2. Update the table above
+3. Submit a PR
 
 ## Acknowledgments
 
