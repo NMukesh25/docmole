@@ -184,7 +184,8 @@ async function askMintlify(question: string): Promise<AskResult> {
 
   const newThreadId = response.headers.get("X-Thread-Id") || conversationState.threadId;
   const text = await response.text();
-  const { answer, messageId } = parseStreamedResponse(text);
+  const baseUrl = `https://${domain}`;
+  const { answer, messageId } = parseStreamedResponse(text, baseUrl);
 
   return { answer, threadId: newThreadId, messageId };
 }
@@ -193,7 +194,7 @@ async function askMintlify(question: string): Promise<AskResult> {
  * Parse SSE response - extract text chunks (0:) and messageId (f:)
  * Skips: 9: (tool calls), a: (search results ~50-100KB), e: (finish), d: (done)
  */
-function parseStreamedResponse(rawResponse: string): { answer: string; messageId?: string } {
+function parseStreamedResponse(rawResponse: string, baseUrl: string): { answer: string; messageId?: string } {
   const lines = rawResponse.split("\n");
   const textChunks: string[] = [];
   let messageId: string | undefined;
@@ -219,8 +220,31 @@ function parseStreamedResponse(rawResponse: string): { answer: string; messageId
     }
   }
 
-  const answer = textChunks.join("").trim() || "No response generated. Please try rephrasing your question.";
+  let answer = textChunks.join("").trim() || "No response generated. Please try rephrasing your question.";
+
+  // Fix markdown links and convert to absolute URLs for Claude Code WebFetch compatibility
+  answer = fixMarkdownLinks(answer, baseUrl);
+
   return { answer, messageId };
+}
+
+/**
+ * Fix markdown links in response:
+ * 1. Correct inverted format: (text)[/path] → [text](/path)
+ * 2. Convert relative URLs to absolute: [text](/path) → [text](https://domain/path)
+ */
+function fixMarkdownLinks(text: string, baseUrl: string): string {
+  // Fix inverted markdown links: (text)[url] → [text](url)
+  let fixed = text.replace(/\(([^)]+)\)\[([^\]]+)\]/g, '[$1]($2)');
+
+  // Convert relative URLs to absolute (only for paths starting with /)
+  // Matches: [any text](/path) but not [text](https://...) or [text](http://...)
+  fixed = fixed.replace(
+    /\[([^\]]+)\]\(\/([^)]+)\)/g,
+    `[$1](${baseUrl}/$2)`
+  );
+
+  return fixed;
 }
 
 // =============================================================================
