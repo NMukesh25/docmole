@@ -80,43 +80,49 @@ async function askMintlify(
 }
 
 /**
- * Parse the streamed response from Mintlify
- * The response is typically in a streaming format that needs parsing
+ * Parse the SSE streamed response from Mintlify
+ *
+ * SSE Format:
+ * - f: Message metadata (messageId)
+ * - 9: Tool calls (search operations) - SKIP (bloats context)
+ * - a: Tool results with docs - SKIP (bloats context)
+ * - 0: Text chunks (the actual response) - KEEP
+ * - e: Finish metadata - SKIP
+ * - d: Done signal - SKIP
+ *
+ * We ONLY extract "0:" chunks to minimize context window usage
  */
 function parseStreamedResponse(rawResponse: string): string {
-  // Try to extract the main content from the streamed response
-  // This may need adjustment based on actual response format
-
-  // Look for text content in the response
-  const lines = rawResponse.split("\n").filter((line) => line.trim());
-
-  // Try to parse as JSON chunks or extract text
-  let content = "";
+  const lines = rawResponse.split("\n");
+  const textChunks: string[] = [];
 
   for (const line of lines) {
-    try {
-      // Try parsing as JSON
-      if (line.startsWith("data:")) {
-        const jsonStr = line.slice(5).trim();
-        if (jsonStr && jsonStr !== "[DONE]") {
-          const parsed = JSON.parse(jsonStr);
-          if (parsed.content) {
-            content += parsed.content;
-          }
+    // Only process text content chunks (prefix "0:")
+    // These contain the actual assistant response
+    if (line.startsWith("0:")) {
+      try {
+        // Remove prefix and parse the JSON string
+        const jsonStr = line.slice(2);
+        const text = JSON.parse(jsonStr);
+        if (typeof text === "string") {
+          textChunks.push(text);
         }
-      } else if (line.startsWith("{")) {
-        const parsed = JSON.parse(line);
-        if (parsed.content) {
-          content += parsed.content;
-        }
+      } catch {
+        // If parsing fails, try to extract raw text
+        const text = line.slice(2).replace(/^"|"$/g, "");
+        if (text) textChunks.push(text);
       }
-    } catch {
-      // If not JSON, might be plain text
-      content += line;
     }
   }
 
-  return content || rawResponse;
+  const content = textChunks.join("");
+
+  // If no text chunks found, return a minimal message
+  if (!content.trim()) {
+    return "No response generated. Please try rephrasing your question.";
+  }
+
+  return content.trim();
 }
 
 // Create MCP server
