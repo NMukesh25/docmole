@@ -52,7 +52,9 @@ User-Agent: Mozilla/5.0 (compatible)
 ```typescript
 interface MessageRequest {
   id: string;           // Project ID (e.g., "agno-v2")
+  fp: string;           // Fingerprint - same as project ID
   messages: Message[];  // Conversation history
+  threadId?: string;    // Optional thread ID for conversation continuity
 }
 
 interface Message {
@@ -82,6 +84,7 @@ interface MessagePart {
 ```json
 {
   "id": "agno-v2",
+  "fp": "agno-v2",
   "messages": [
     {
       "id": "1",
@@ -104,6 +107,7 @@ interface MessagePart {
 ```json
 {
   "id": "agno-v2",
+  "fp": "agno-v2",
   "messages": [
     {
       "id": "1",
@@ -156,6 +160,7 @@ curl -X POST 'https://leaves.mintlify.com/api/assistant/agno-v2/message' \
   -H 'Referer: https://docs.agno.com/' \
   -d '{
     "id": "agno-v2",
+    "fp": "agno-v2",
     "messages": [
       {
         "id": "1",
@@ -177,6 +182,7 @@ curl -X POST 'https://leaves.mintlify.com/api/assistant/agno-v2/message' \
   -H 'Content-Type: application/json' \
   -d '{
     "id": "agno-v2",
+    "fp": "agno-v2",
     "messages": [{
       "id": "1",
       "role": "user",

@@ -60,6 +60,7 @@ async function askMintlify(
     },
     body: JSON.stringify({
       id: projectId,
+      fp: projectId,  // Fingerprint - required, same as project ID
       messages,
     }),
   });
