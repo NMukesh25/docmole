@@ -6,6 +6,16 @@
 import { DEFAULT_HOST, DEFAULT_PORT } from "../backends/agno";
 
 // =============================================================================
+// BACKEND TYPES - Single source of truth
+// =============================================================================
+
+/** All supported backend types */
+export const BACKEND_TYPES = ["mintlify", "embedded", "agno"] as const;
+
+/** Backend type union - derived from BACKEND_TYPES */
+export type BackendType = (typeof BACKEND_TYPES)[number];
+
+// =============================================================================
 // TYPE DEFINITIONS
 // =============================================================================
 
@@ -20,7 +30,7 @@ export interface ProjectConfig {
     discovery: "sitemap" | "mintjson";
   };
 
-  backend: "agno" | "mintlify" | "embedded";
+  backend: BackendType;
 
   // Mintlify-specific settings (when backend: "mintlify")
   mintlify?: {
@@ -67,7 +77,7 @@ export interface SeedingStatus {
 }
 
 export interface GlobalConfig {
-  default_backend: "agno" | "mintlify" | "embedded";
+  default_backend: BackendType;
   agno_defaults: AgnoConfig;
   embedded_defaults: EmbeddedProjectConfig;
 }
@@ -114,7 +124,7 @@ export const DEFAULT_GLOBAL_CONFIG: GlobalConfig = {
 export interface CreateProjectOptions {
   name?: string;
   prefix?: string;
-  backend?: "agno" | "mintlify" | "embedded";
+  backend?: BackendType;
   // Mintlify options
   mintlifyProjectId?: string;
   mintlifyDomain?: string;

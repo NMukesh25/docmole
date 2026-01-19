@@ -3,6 +3,7 @@
 // =============================================================================
 
 import { generateText, stepCountIs } from "ai";
+import type { BackendFactory } from "../registry";
 import type { AskResult, Backend } from "../types";
 import {
   type ConfigOptions,
@@ -233,3 +234,35 @@ export {
 export type { CleanedResult } from "./retriever";
 export { formatResultsForContext, KnowledgeRetriever } from "./retriever";
 export { createSearchKnowledgeTool } from "./tools";
+
+// =============================================================================
+// BACKEND FACTORY - For registry integration
+// =============================================================================
+
+export interface EmbeddedBackendOptions {
+  projectId: string;
+  projectPath: string;
+  local?: boolean;
+  llmProvider?: "openai" | "ollama";
+  llmModel?: string;
+  embeddingProvider?: "openai" | "ollama";
+  embeddingModel?: string;
+  ollamaBaseUrl?: string;
+}
+
+export const backendFactory: BackendFactory<EmbeddedBackendOptions> = {
+  displayName: "Embedded (TypeScript RAG)",
+  requiredDependencies: ["@lancedb/lancedb", "ai", "openai"],
+
+  async create(options: EmbeddedBackendOptions): Promise<Backend> {
+    return createEmbeddedBackend(options.projectId, {
+      projectPath: options.projectPath,
+      local: options.local,
+      llmProvider: options.llmProvider,
+      llmModel: options.llmModel,
+      embeddingProvider: options.embeddingProvider,
+      embeddingModel: options.embeddingModel,
+      ollamaBaseUrl: options.ollamaBaseUrl,
+    });
+  },
+};

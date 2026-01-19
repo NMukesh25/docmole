@@ -1,3 +1,4 @@
+import type { BackendFactory } from "./registry";
 import type { AskResult, Backend, MintlifyBackendConfig } from "./types";
 
 // =============================================================================
@@ -182,3 +183,21 @@ export function createMintlifyBackend(
 ): MintlifyBackend {
   return new MintlifyBackend({ type: "mintlify", projectId, domain });
 }
+
+// =============================================================================
+// BACKEND FACTORY - For registry integration
+// =============================================================================
+
+export interface MintlifyBackendOptions {
+  projectId: string;
+  domain: string;
+}
+
+export const backendFactory: BackendFactory<MintlifyBackendOptions> = {
+  displayName: "Mintlify API",
+  requiredDependencies: [],
+
+  async create(options: MintlifyBackendOptions): Promise<Backend> {
+    return createMintlifyBackend(options.projectId, options.domain);
+  },
+};
