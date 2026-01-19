@@ -10,6 +10,7 @@ import type { Backend } from "../backends/types";
 import { loadProjectConfig } from "../config/loader";
 import { paths } from "../config/paths";
 import { startMcpServer } from "../server";
+import { ensureOpenAIApiKey } from "./prompt";
 import { startServer, stopServer, waitForServer } from "./start";
 
 // =============================================================================
@@ -106,13 +107,15 @@ async function createEmbeddedBackendFromConfig(
     throw new Error("Config is required");
   }
 
-  // Validate environment for cloud mode
-  if (!config.embedded?.local && !process.env.OPENAI_API_KEY) {
-    console.error("Error: OPENAI_API_KEY environment variable is required.");
-    console.error(
-      "Set it or reconfigure the project with --local flag for Ollama.",
-    );
-    process.exit(1);
+  // Validate environment for cloud mode (prompt if interactive)
+  if (!config.embedded?.local) {
+    const hasApiKey = await ensureOpenAIApiKey();
+    if (!hasApiKey) {
+      console.error(
+        "Tip: Reconfigure the project with --local flag for Ollama.",
+      );
+      process.exit(1);
+    }
   }
 
   // Dynamic import to avoid loading embedded module if not needed

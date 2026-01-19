@@ -6,6 +6,7 @@ import {
   type ProjectConfig,
 } from "../config/schema";
 import { discoverPages, isMintlifySite } from "../discovery";
+import { ensureOpenAIApiKey } from "./prompt";
 import { seedDocs } from "./seed";
 import { startServer, waitForServer } from "./start";
 import { stopAllServers } from "./stop";
@@ -86,18 +87,18 @@ export async function setupCommand(options: SetupOptions): Promise<void> {
     process.exit(1);
   }
 
-  // Validate environment for embedded mode
-  if (backend === "embedded") {
-    // Local mode (Ollama) is not yet implemented
-    if (local) {
+  // Validate environment for RAG backends (embedded & agno both need OpenAI)
+  if (backend === "embedded" || backend === "agno") {
+    // Local mode (Ollama) is not yet implemented for embedded
+    if (backend === "embedded" && local) {
       console.error("❌ Local mode (Ollama) is not yet implemented.");
       console.error("   Please use OpenAI mode with OPENAI_API_KEY for now.");
       process.exit(1);
     }
 
-    if (!process.env.OPENAI_API_KEY) {
-      console.error("❌ OPENAI_API_KEY environment variable is required.");
-      console.error("   Export it: export OPENAI_API_KEY=sk-...");
+    // Ensure API key is available (prompt if interactive)
+    const hasApiKey = await ensureOpenAIApiKey();
+    if (!hasApiKey) {
       process.exit(1);
     }
   }
