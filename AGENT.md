@@ -41,18 +41,22 @@ CLI (src/index.ts) → Backend (mintlify|embedded|agno) → MCP Server (src/serv
 | Module | Purpose |
 |--------|---------|
 | `src/backends/` | Backend implementations (Mintlify API, Embedded, Agno) |
+| `src/backends/registry.ts` | Dynamic backend loading with graceful fallbacks |
 | `src/backends/embedded/` | Pure TypeScript RAG with LanceDB + AI SDK |
 | `src/cli/` | CLI commands (setup, serve, start, stop, seed, list) |
 | `src/config/` | Project config YAML storage in `~/.mintlify-mcp/` |
+| `src/config/schema.ts` | Backend types (`BACKEND_TYPES`) and project config schema |
 | `src/discovery/` | Sitemap/mint.json parsing for page discovery |
 | `src/server.ts` | MCP server exposing `ask` and `clear_history` tools |
 
-### Backend Pattern
+### Backend Registry
 
-All backends implement `Backend` interface from `src/backends/types.ts`. To add a new backend:
-1. Create class implementing `Backend` in `src/backends/`
-2. Add factory function `createXxxBackend()`
-3. Wire up in `src/index.ts`
+Backends load dynamically via `src/backends/registry.ts`. To add a new backend:
+
+1. Add to `BACKEND_TYPES` in `src/config/schema.ts`
+2. Create `src/backends/{name}.ts` exporting `backendFactory`
+
+Convention: module path = `./${type}` (no manual mapping needed).
 
 ### Config Storage
 
