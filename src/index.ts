@@ -55,21 +55,15 @@ SETUP OPTIONS:
   --id <id>         Project ID (required)
   --name <name>     Display name (optional)
   --prefix <path>   Only include pages under this path (optional)
-  --local           Use local mode (Ollama) instead of OpenAI
   --backend <type>  Backend: embedded (default), agno (Python)
 
 ADVANCED OPTIONS:
-  --llm-provider <p>        LLM provider: openai, ollama
-  --llm-model <model>       LLM model name
-  --embedding-provider <p>  Embedding provider: openai, ollama
-  --embedding-model <model> Embedding model name
+  --llm-model <model>       LLM model name (default: gpt-4o-mini)
+  --embedding-model <model> Embedding model name (default: text-embedding-3-small)
 
 EXAMPLES:
   # Set up assistant for any documentation site (requires OPENAI_API_KEY)
   ${CLI_NAME} setup --url https://docs.example.com --id my-docs
-
-  # Use local mode with Ollama (no API key needed)
-  ${CLI_NAME} setup --url https://docs.example.com --id my-docs --local
 
   # After setup, add to Claude Code:
   claude mcp add my-docs -- bunx ${CLI_NAME} serve --project my-docs

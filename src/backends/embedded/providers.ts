@@ -19,9 +19,10 @@ export function createLLM(config: LLMConfig): LanguageModel {
       return openai(config.model);
 
     case "ollama":
-      // Ollama provider will be loaded dynamically to avoid bundling if not used
+      // TODO: Ollama LLM support planned for Phase 3
+      // Will use @ai-sdk/openai-compatible or custom provider
       throw new Error(
-        "Ollama LLM provider not yet implemented. Use --llm-provider openai for now.",
+        "Ollama LLM is not yet implemented. Use OpenAI for now (requires OPENAI_API_KEY).",
       );
 
     default:
@@ -175,7 +176,11 @@ export function createEmbedder(config: EmbeddingConfig): Embedder {
       return new OpenAIEmbedder(config.model);
 
     case "ollama":
-      return new OllamaEmbedder(config.model, config.baseUrl);
+      // TODO: Ollama embeddings support planned for Phase 3
+      // The OllamaEmbedder class exists but needs testing
+      throw new Error(
+        "Ollama embeddings are not yet implemented. Use OpenAI for now (requires OPENAI_API_KEY).",
+      );
 
     default:
       throw new Error(`Unknown embedding provider: ${config.provider}`);

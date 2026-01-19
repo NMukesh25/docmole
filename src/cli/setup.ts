@@ -87,12 +87,17 @@ export async function setupCommand(options: SetupOptions): Promise<void> {
   }
 
   // Validate environment for embedded mode
-  if (backend === "embedded" && !local) {
+  if (backend === "embedded") {
+    // Local mode (Ollama) is not yet implemented
+    if (local) {
+      console.error("❌ Local mode (Ollama) is not yet implemented.");
+      console.error("   Please use OpenAI mode with OPENAI_API_KEY for now.");
+      process.exit(1);
+    }
+
     if (!process.env.OPENAI_API_KEY) {
       console.error("❌ OPENAI_API_KEY environment variable is required.");
-      console.error(
-        "   Set it or use --local flag for fully local mode (requires Ollama).",
-      );
+      console.error("   Export it: export OPENAI_API_KEY=sk-...");
       process.exit(1);
     }
   }
