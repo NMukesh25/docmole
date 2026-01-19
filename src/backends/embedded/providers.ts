@@ -47,6 +47,13 @@ export interface Embedder {
   readonly dimensions: number;
 }
 
+// Known OpenAI embedding model dimensions
+const OPENAI_EMBEDDING_DIMENSIONS: Record<string, number> = {
+  "text-embedding-3-small": 1536,
+  "text-embedding-3-large": 3072,
+  "text-embedding-ada-002": 1536,
+};
+
 /**
  * OpenAI Embedder using the OpenAI API
  */
@@ -54,10 +61,13 @@ export class OpenAIEmbedder implements Embedder {
   private model: string;
   readonly dimensions: number;
 
-  constructor(model = "text-embedding-3-small") {
+  constructor(model = "text-embedding-3-small", dimensions?: number) {
     this.model = model;
-    // text-embedding-3-small = 1536, text-embedding-3-large = 3072
-    this.dimensions = model.includes("large") ? 3072 : 1536;
+    // Use explicit dimensions, known dimensions, or fallback
+    this.dimensions =
+      dimensions ??
+      OPENAI_EMBEDDING_DIMENSIONS[model] ??
+      (model.includes("large") ? 3072 : 1536);
   }
 
   async embed(text: string): Promise<number[]> {
@@ -99,6 +109,14 @@ export class OpenAIEmbedder implements Embedder {
   }
 }
 
+// Known Ollama embedding model dimensions
+const OLLAMA_EMBEDDING_DIMENSIONS: Record<string, number> = {
+  "nomic-embed-text": 768,
+  "mxbai-embed-large": 1024,
+  "all-minilm": 384,
+  "snowflake-arctic-embed": 1024,
+};
+
 /**
  * Ollama Embedder using local Ollama server
  */
@@ -107,11 +125,18 @@ export class OllamaEmbedder implements Embedder {
   private baseUrl: string;
   readonly dimensions: number;
 
-  constructor(model = "nomic-embed-text", baseUrl = "http://localhost:11434") {
+  constructor(
+    model = "nomic-embed-text",
+    baseUrl = "http://localhost:11434",
+    dimensions?: number,
+  ) {
     this.model = model;
     this.baseUrl = baseUrl;
-    // nomic-embed-text = 768, mxbai-embed-large = 1024
-    this.dimensions = model.includes("large") ? 1024 : 768;
+    // Use explicit dimensions, known dimensions, or fallback
+    this.dimensions =
+      dimensions ??
+      OLLAMA_EMBEDDING_DIMENSIONS[model] ??
+      (model.includes("large") ? 1024 : 768);
   }
 
   async embed(text: string): Promise<number[]> {

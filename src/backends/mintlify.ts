@@ -23,7 +23,9 @@ interface ConversationState {
   threadId?: string;
 }
 
-const MINTLIFY_API_BASE = "https://leaves.mintlify.com/api/assistant";
+// Allow override for proxies or alternative endpoints
+const MINTLIFY_API_BASE =
+  process.env.MINTLIFY_API_BASE || "https://leaves.mintlify.com/api/assistant";
 
 export class MintlifyBackend implements Backend {
   readonly name = "mintlify";
