@@ -8,6 +8,7 @@ import {
 import { createMintlifyBackend } from "../backends/mintlify";
 import type { Backend } from "../backends/types";
 import { loadProjectConfig } from "../config/loader";
+import { paths } from "../config/paths";
 import { startMcpServer } from "../server";
 import { startServer, stopServer, waitForServer } from "./start";
 
@@ -46,8 +47,11 @@ export async function serveCommand(options: ServeOptions): Promise<void> {
       config.mintlify.project_id,
       config.mintlify.domain,
     );
+  } else if (config.backend === "embedded") {
+    // Use embedded TypeScript RAG backend
+    backend = await createEmbeddedBackendFromConfig(config);
   } else {
-    // Use local RAG backend
+    // Use Agno (Python) RAG backend
     const host = config.agno?.host || DEFAULT_HOST;
     const port = config.agno?.port || DEFAULT_PORT;
 
@@ -86,4 +90,55 @@ export async function serveCommand(options: ServeOptions): Promise<void> {
   // Start MCP server
   console.error(`Starting MCP server for "${config.name}"...`);
   await startMcpServer(backend, config.name);
+}
+
+// =============================================================================
+// HELPERS
+// =============================================================================
+
+/**
+ * Create embedded backend from project config
+ */
+async function createEmbeddedBackendFromConfig(
+  config: Awaited<ReturnType<typeof loadProjectConfig>>,
+): Promise<Backend> {
+  if (!config) {
+    throw new Error("Config is required");
+  }
+
+  // Validate environment for cloud mode
+  if (!config.embedded?.local && !process.env.OPENAI_API_KEY) {
+    console.error("Error: OPENAI_API_KEY environment variable is required.");
+    console.error(
+      "Set it or reconfigure the project with --local flag for Ollama.",
+    );
+    process.exit(1);
+  }
+
+  // Dynamic import to avoid loading embedded module if not needed
+  const { createEmbeddedBackend } = await import("../backends/embedded");
+
+  console.error(
+    `Loading embedded backend (${config.embedded?.local ? "local" : "cloud"} mode)...`,
+  );
+
+  const backend = await createEmbeddedBackend(config.id, {
+    projectPath: paths.project(config.id),
+    local: config.embedded?.local,
+    llmProvider: config.embedded?.llm_provider,
+    llmModel: config.embedded?.llm_model,
+    embeddingProvider: config.embedded?.embedding_provider,
+    embeddingModel: config.embedded?.embedding_model,
+    ollamaBaseUrl: config.embedded?.ollama_base_url,
+  });
+
+  // Check if knowledge base has documents
+  const isAvailable = await backend.isAvailable();
+  if (!isAvailable) {
+    console.error(
+      "Warning: Knowledge base is empty or unavailable. Run setup again.",
+    );
+  }
+
+  return backend;
 }
