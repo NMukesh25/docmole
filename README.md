@@ -10,8 +10,8 @@
   <em>Dig through any documentation with AI</em>
 </p>
 
-[![npm version](https://img.shields.io/npm/v/docmole.svg)](https://www.npmjs.com/package/docmole)
-[![License MIT](https://img.shields.io/github/license/Vigtu/docmole)](https://opensource.org/licenses/MIT)
+[![npm version](https://img.shields.io/npm/v/docmole?cacheSeconds=3600)](https://www.npmjs.com/package/docmole)
+[![License](https://img.shields.io/badge/license-MIT-green)](https://opensource.org/licenses/MIT)
 [![Bun](https://img.shields.io/badge/runtime-Bun-f9f1e1?logo=bun)](https://bun.sh)
 [![MCP](https://img.shields.io/badge/protocol-MCP-blue)](https://modelcontextprotocol.io)
 
