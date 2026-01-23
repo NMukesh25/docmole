@@ -1,11 +1,11 @@
 {
-  "name": "mintlify-mcp",
-  "version": "0.2.0",
-  "description": "MCP server to chat with any Mintlify-powered documentation via Claude Code",
+  "name": "docmole",
+  "version": "0.4.2",
+  "description": "Dig through any documentation with AI - MCP server for Claude, Cursor, and other AI assistants",
   "main": "src/index.ts",
   "type": "module",
   "bin": {
-    "mintlify-mcp": "./src/index.ts"
+    "docmole": "./src/index.ts"
   },
   "files": [
     "src",
@@ -20,22 +20,26 @@
     "lint": "biome check --write --unsafe src tests && cd python && uv run ruff check --fix . && uv run ruff format ."
   },
   "keywords": [
+    "docmole",
     "mcp",
-    "mintlify",
-    "claude",
-    "claude-code",
     "documentation",
+    "docs",
+    "rag",
+    "claude",
+    "cursor",
     "ai",
     "assistant",
     "model-context-protocol",
     "anthropic",
-    "bun"
+    "bun",
+    "lancedb",
+    "vector-search"
   ],
   "author": "Vigtu",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/Vigtu/mintlify-mcp.git"
+    "url": "https://github.com/Vigtu/docmole.git"
   },
   "engines": {
     "bun": ">=1.0.0"

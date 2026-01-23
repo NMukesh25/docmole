@@ -17,7 +17,7 @@ import { ensureOpenAIApiKey } from "./prompt";
 import { startServer, stopServer, waitForServer } from "./start";
 
 // =============================================================================
-// SERVE COMMAND - Start MCP server for Claude Code
+// SERVE COMMAND - Start MCP server for AI assistants
 // =============================================================================
 
 /** Server startup timeout in milliseconds */
