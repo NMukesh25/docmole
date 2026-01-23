@@ -157,12 +157,12 @@ export async function createCommand(options: CreateOptions): Promise<void> {
     console.log(`  3. Start MCP server:`);
     console.log(`     docmole serve --project ${id}`);
     console.log();
-    console.log(`  Or configure Claude Code:`);
+    console.log(`  Or configure your MCP client:`);
     console.log(
       `     claude mcp add ${id} -- bunx docmole serve --project ${id}`,
     );
   } else {
-    console.log(`  Configure Claude Code:`);
+    console.log(`  Configure your MCP client:`);
     console.log(
       `     claude mcp add ${id} -- bunx docmole serve --project ${id}`,
     );

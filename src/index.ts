@@ -33,7 +33,7 @@ const CLI_NAME = "docmole";
 
 function showHelp(): void {
   console.log(`
-${CLI_NAME} - AI documentation assistant for Claude Code
+${CLI_NAME} - Dig through any documentation with AI
 
 QUICK START:
   ${CLI_NAME} setup --url <docs-url> --id <project-id>
@@ -42,11 +42,11 @@ QUICK START:
   1. Discover all documentation pages
   2. Create embedded vector store (no Python needed!)
   3. Seed knowledge base
-  4. Show Claude Code configuration
+  4. Show MCP client configuration
 
 COMMANDS:
   setup     Set up a new documentation assistant (recommended)
-  serve     Start MCP server for Claude Code
+  serve     Start MCP server for AI assistants
   list      List all configured projects
   stop      Stop background RAG server (Agno mode only)
 
@@ -65,8 +65,8 @@ EXAMPLES:
   # Set up assistant for any documentation site (requires OPENAI_API_KEY)
   ${CLI_NAME} setup --url https://docs.example.com --id my-docs
 
-  # After setup, add to Claude Code:
-  claude mcp add my-docs -- bunx ${CLI_NAME} serve --project my-docs
+  # After setup, add to your MCP client (Claude, Cursor, etc.):
+  bunx ${CLI_NAME} serve --project my-docs
 
 MINTLIFY API (for sites with built-in AI Assistant):
   ${CLI_NAME} -p <project-id>

@@ -185,12 +185,12 @@ export async function setupCommand(options: SetupOptions): Promise<void> {
   console.log("✅ Setup complete!");
   console.log("=".repeat(60));
 
-  console.log("\n📋 Add to Claude Code:\n");
+  console.log("\n📋 Quick setup (Claude Code):\n");
   console.log(
     `   claude mcp add ${id} -- bunx ${cliName} serve --project ${id}`,
   );
 
-  console.log("\n💡 Or add manually to your MCP settings:\n");
+  console.log("\n💡 Or add manually to your MCP client settings:\n");
   console.log(`   {
      "mcpServers": {
        "${id}": {
@@ -201,7 +201,7 @@ export async function setupCommand(options: SetupOptions): Promise<void> {
    }`);
 
   console.log(
-    "\n🎉 Done! Restart Claude Code to use your documentation assistant.\n",
+    "\n🎉 Done! Restart your AI assistant to use the documentation.\n",
   );
 }
 
