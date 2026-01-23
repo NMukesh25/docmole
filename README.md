@@ -1,162 +1,180 @@
-# mintlify-mcp
+<p align="center">
+  <a href="https://github.com/Vigtu/docmole">
+    <img loading="lazy" alt="docmole" src="assets/docmole-hero.png" width="100%"/>
+  </a>
+</p>
 
-> MCP server to query any Mintlify-powered documentation from Claude Code
+# Docmole
 
-[![npm version](https://img.shields.io/npm/v/mintlify-mcp.svg)](https://www.npmjs.com/package/mintlify-mcp)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+<p align="center">
+  <img src="assets/docmole.png" alt="docmole mascot" width="120" />
+  <br />
+  <em>Dig through any documentation with AI</em>
+</p>
 
-## What is this?
+[![npm version](https://img.shields.io/npm/v/docmole.svg)](https://www.npmjs.com/package/docmole)
+[![License MIT](https://img.shields.io/github/license/Vigtu/docmole)](https://opensource.org/licenses/MIT)
+[![Bun](https://img.shields.io/badge/runtime-Bun-f9f1e1?logo=bun)](https://bun.sh)
+[![MCP](https://img.shields.io/badge/protocol-MCP-blue)](https://modelcontextprotocol.io)
 
-An MCP server that lets you query any documentation site powered by [Mintlify](https://mintlify.com) directly from Claude Code.
+Docmole is an MCP server that lets you query **any documentation site** from AI assistants like Claude, Cursor, or any MCP-compatible client. The mole digs through docs so you don't have to.
 
-**Features:**
-- 🔍 Ask questions about Agno, Resend, or any Mintlify docs
-- 💻 Get code examples and explanations without leaving your terminal
-- 🧠 Multi-turn conversations with memory
-- 🔗 Links converted to absolute URLs (WebFetch compatible)
-- 🏠 Local RAG mode for Mintlify documentation sites
+## Features
 
-## Quick Start
+* 🔍 **Universal docs support** — works with any documentation site
+* 🏠 **Self-hosted RAG** — LanceDB vectors + OpenAI embeddings, no Python needed
+* ⚡ **Zero-setup mode** — instant access to Mintlify-powered sites
+* 🧠 **Multi-turn conversations** — remembers context across questions
+* 🔗 **WebFetch compatible** — links converted to absolute URLs
+* 🔌 **MCP native** — works with Claude, Cursor, and any MCP client
 
-### Remote Mode (zero setup)
+### Coming soon
 
-For documentation sites with [Mintlify AI Assistant](https://mintlify.com):
+* 🦙 **Ollama support** — fully local mode, no API keys needed
+* 📄 **Generic HTML extraction** — support for non-Mintlify documentation sites
+* 🔄 **Incremental updates** — only re-index changed pages
 
-```bash
-claude mcp add agno-assistant -- bunx mintlify-mcp -p agno-v2
-```
+## Installation
 
-Or add to your MCP settings:
-
-```json
-{
-  "mcpServers": {
-    "agno-assistant": {
-      "command": "bunx",
-      "args": ["mintlify-mcp", "-p", "agno-v2"]
-    }
-  }
-}
-```
-
-### Local RAG Mode (Mintlify sites)
+To use Docmole, run it directly with bunx (no install needed):
 
 ```bash
-# One-time setup (discovers pages, starts server, seeds knowledge base)
-bunx mintlify-mcp setup --url https://docs.example.com --id my-docs
-
-# Add to Claude Code
-claude mcp add my-docs -- bunx mintlify-mcp serve --project my-docs
+bunx docmole --help
 ```
 
-Or add to your MCP settings:
+Or install globally:
+
+```bash
+bun install -g docmole
+```
+
+Works on macOS, Linux and Windows. Requires [Bun](https://bun.sh) runtime.
+
+## Getting started
+
+### Local RAG Mode (any docs site)
+
+Index and query any documentation site. Requires `OPENAI_API_KEY`.
+
+```bash
+# One-time setup — discovers pages and builds vector index
+bunx docmole setup --url https://docs.example.com --id my-docs
+
+# Start the MCP server
+bunx docmole serve --project my-docs
+```
+
+Add to your MCP client:
 
 ```json
 {
   "mcpServers": {
     "my-docs": {
       "command": "bunx",
-      "args": ["mintlify-mcp", "serve", "--project", "my-docs"]
+      "args": ["docmole", "serve", "--project", "my-docs"]
     }
   }
 }
 ```
 
-## Known Project IDs (Remote Mode)
+### Mintlify Mode (zero setup)
 
-| Documentation | Project ID | Status |
-|--------------|------------|--------|
-| [Agno](https://docs.agno.com) | `agno-v2` | Tested |
-| [Resend](https://resend.com/docs) | `resend` | Tested |
-| [Upstash](https://upstash.com/docs) | `upstash` | Tested |
-| [Mintlify](https://mintlify.com/docs) | `mintlify` | Tested |
-| [Vercel](https://vercel.com/docs) | `vercel` | Tested |
-| [Plain](https://plain.com/docs) | `plain` | Tested |
-
-> **Want to add more?** The project ID is usually the subdomain or company name. Open a PR or issue!
-
-### Finding New Project IDs
-
-1. Open the documentation site (e.g., `docs.agno.com`)
-2. Open browser DevTools → Network tab
-3. Use the search or AI assistant feature
-4. Look for requests to `leaves.mintlify.com/api/assistant/{project-id}/message`
-
-## CLI Commands
+For sites with [Mintlify AI Assistant](https://mintlify.com) — no API key needed:
 
 ```bash
-# Remote mode (Mintlify API)
-bunx mintlify-mcp -p <project-id>
+bunx docmole -p agno-v2
+```
+
+```json
+{
+  "mcpServers": {
+    "agno-docs": {
+      "command": "bunx",
+      "args": ["docmole", "-p", "agno-v2"]
+    }
+  }
+}
+```
+
+## CLI
+
+Docmole has a built-in CLI for all operations:
+
+```bash
+# Mintlify mode (proxy to Mintlify API)
+docmole -p <project-id>
 
 # Local RAG mode
-bunx mintlify-mcp setup --url <docs-url> --id <project-id>
-bunx mintlify-mcp serve --project <project-id>
-bunx mintlify-mcp list
-bunx mintlify-mcp stop --project <project-id>
+docmole setup --url <docs-url> --id <project-id>
+docmole serve --project <project-id>
+docmole list
+docmole stop --project <project-id>
 ```
 
-Run `bunx mintlify-mcp --help` for all options.
+Run `docmole --help` for all options.
 
-## Environment Variables
-
-| Variable | Default | Description |
-|----------|---------|-------------|
-| `AGNO_HOST` | `127.0.0.1` | RAG server host |
-| `AGNO_PORT` | `7777` | RAG server port |
-| `OPENAI_API_KEY` | - | Required for local RAG mode |
-
-## Requirements
-
-- [Bun](https://bun.sh) runtime: `curl -fsSL https://bun.sh/install | bash`
-- [Python 3.11+](https://python.org) with [uv](https://docs.astral.sh/uv/) (for local RAG mode)
-- [OpenAI API key](https://platform.openai.com/api-keys) (for local RAG mode)
-
-## How It Works
+## How it works
 
 ```
-┌─────────────┐     ┌─────────────┐     ┌─────────────────────┐
-│ Claude Code │────▶│ MCP Server  │────▶│ Remote: Mintlify API│
-│             │◀────│ (this repo) │◀────│ Local: Agno + LanceDB│
-└─────────────┘     └─────────────┘     └─────────────────────┘
+┌─────────────┐     ┌─────────────┐     ┌──────────────────────┐
+│ MCP Client  │────▶│   Docmole   │────▶│ Embedded: LanceDB    │
+│ (Claude,    │◀────│ MCP Server  │◀────│ Mintlify: API proxy  │
+│  Cursor...) │     └─────────────┘     └──────────────────────┘
+└─────────────┘
 ```
 
-**Remote Mode**: Proxies to Mintlify's AI Assistant API.
+**Local RAG Mode**: Crawls documentation, generates embeddings with OpenAI, stores in LanceDB. Hybrid search combines semantic and keyword matching.
 
-**Local Mode**: Self-hosted RAG with LanceDB vectors + OpenAI embeddings. Hybrid search (semantic + keyword).
+**Mintlify Mode**: Proxies requests to Mintlify's AI Assistant API. Zero setup, instant results.
 
-## Project Structure
+## Known Mintlify Project IDs
+
+| Documentation | Project ID |
+|--------------|------------|
+| [Agno](https://docs.agno.com) | `agno-v2` |
+| [Resend](https://resend.com/docs) | `resend` |
+| [Mintlify](https://mintlify.com/docs) | `mintlify` |
+| [Vercel](https://vercel.com/docs) | `vercel` |
+| [Upstash](https://upstash.com/docs) | `upstash` |
+| [Plain](https://plain.com/docs) | `plain` |
+
+> **Find more**: Open DevTools → Network tab → use the AI assistant → look for `leaves.mintlify.com/api/assistant/{project-id}/message`
+
+## Configuration
+
+| Environment Variable | Default | Description |
+|---------------------|---------|-------------|
+| `OPENAI_API_KEY` | — | Required for local RAG mode |
+| `DOCMOLE_DATA_DIR` | `~/.docmole` | Data directory for projects |
+
+### Project structure
 
 ```
-~/.mintlify-mcp/
+~/.docmole/
 ├── projects/
 │   └── <project-id>/
 │       ├── config.yaml      # Project configuration
-│       ├── lancedb/         # Vector database
-│       └── logs/            # Server logs
+│       └── lancedb/         # Vector database
 └── global.yaml              # Global settings
 ```
 
-## API Documentation
+## Documentation
 
-See [AGENT.md](./AGENT.md) for complete documentation including:
+See [AGENT.md](./AGENT.md) for detailed documentation including:
 - Architecture details
 - Backend implementations
-- Reverse-engineered Mintlify API docs
 - Enterprise deployment guides
-
-## License
-
-MIT - See [LICENSE](./LICENSE)
 
 ## Contributing
 
-PRs welcome! To add a new documentation site:
-1. Add the project ID to `KNOWN_DOCS` in `src/index.ts`
-2. Update the table above
-3. Submit a PR
+PRs welcome! See the [contributing guide](./CONTRIBUTING.md) for details.
 
 ## Acknowledgments
 
-- [Mintlify](https://mintlify.com) ([GitHub](https://github.com/mintlify)) for building amazing documentation tooling
+- [Mintlify](https://mintlify.com) for amazing documentation tooling
 - [Anthropic](https://anthropic.com) for Claude and the MCP protocol
-- [Agno](https://agno.com) for the RAG framework
+- [LanceDB](https://lancedb.com) for the vector database
+
+## License
+
+The Docmole codebase is under [MIT license](./LICENSE).
