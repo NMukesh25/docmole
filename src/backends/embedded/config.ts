@@ -39,9 +39,12 @@ export interface EmbeddedConfig {
 
 /**
  * Parse env var as number with fallback
+ * Supports both new DOCMOLE_* and legacy MINTLIFY_* prefixes
  */
 function envNumber(key: string, fallback: number): number {
-  const value = process.env[key];
+  // Support both new and legacy env var prefixes
+  const newKey = key.replace("MINTLIFY_", "DOCMOLE_");
+  const value = process.env[newKey] ?? process.env[key];
   if (value === undefined) return fallback;
   const parsed = parseFloat(value);
   return Number.isNaN(parsed) ? fallback : parsed;
@@ -49,19 +52,19 @@ function envNumber(key: string, fallback: number): number {
 
 /**
  * Search configuration constants
- * All values can be overridden via environment variables
+ * All values can be overridden via environment variables (DOCMOLE_* or legacy MINTLIFY_*)
  */
 export const SEARCH_CONFIG = {
   /** Minimum relevance score threshold (same as Python: 0.015) */
-  MIN_SCORE: envNumber("MINTLIFY_MIN_SCORE", 0.015),
+  MIN_SCORE: envNumber("DOCMOLE_MIN_SCORE", 0.015),
   /** Maximum chunks per source URL for deduplication */
-  MAX_CHUNKS_PER_URL: envNumber("MINTLIFY_MAX_CHUNKS_PER_URL", 2),
+  MAX_CHUNKS_PER_URL: envNumber("DOCMOLE_MAX_CHUNKS_PER_URL", 2),
   /** Default number of documents to retrieve */
-  DEFAULT_NUM_DOCS: envNumber("MINTLIFY_DEFAULT_NUM_DOCS", 10),
+  DEFAULT_NUM_DOCS: envNumber("DOCMOLE_DEFAULT_NUM_DOCS", 10),
   /** Multiplier for initial retrieval before filtering */
-  RETRIEVAL_MULTIPLIER: envNumber("MINTLIFY_RETRIEVAL_MULTIPLIER", 2),
+  RETRIEVAL_MULTIPLIER: envNumber("DOCMOLE_RETRIEVAL_MULTIPLIER", 2),
   /** Maximum tool call iterations (same as Python: tool_call_limit=3) */
-  MAX_STEPS: envNumber("MINTLIFY_MAX_STEPS", 3),
+  MAX_STEPS: envNumber("DOCMOLE_MAX_STEPS", 3),
 } as const;
 
 // =============================================================================
